@@ -8,6 +8,7 @@ import atob from 'atob'
 import AccountCard from '../components/AccountCard'
 import AccountTable from '../components/AccountTable'
 import TotalBalanceCard from '../components/TotalBalanceCard'
+import * as XLSX from 'xlsx'
 
 export default function Home(props) {
 
@@ -51,6 +52,7 @@ export default function Home(props) {
       console.log(acc)
       if([...account].includes(acc) || account_arr.reduce((count, cur) => cur===acc ? count+=1 : count) > 1) {
         alert(`Account: ${acc} exists!`)
+		continue;
       }
       newAcc.push(acc)
     }
@@ -94,6 +96,56 @@ export default function Home(props) {
     setInput("")
     setTotalTLM(0)
   }
+
+  const [uploadFile, setUploadFile] = useState("");
+
+  const readFileUpload = (e) => {
+	e.preventDefault()
+	
+    const promise = new Promise((resolve, reject) => {
+      const fileReader = new FileReader();
+      fileReader.readAsArrayBuffer(uploadFile[0]);
+
+      fileReader.onload = (e) => {
+        const bufferArray = e.target.result;
+		let data = [];
+
+        const wb = XLSX.read(bufferArray, { type: "buffer" });
+		wb.SheetNames.forEach(sheetName => {
+			let ws = wb.Sheets[sheetName];
+			data =[...XLSX.utils.sheet_to_json(ws), ...data];
+		});
+
+        resolve(data);
+      };
+
+      fileReader.onerror = (error) => {
+        reject(error);
+      };
+    });
+
+    promise.then((d) => {
+		d = d.map((item) => {
+			return item.User ? item.User : item.user;
+		});
+
+		let account_arr = d.filter((item) => {
+			return item !== undefined;
+		});
+
+	  	let newAcc = [...account]
+		for(let acc of account_arr) {
+			acc = acc.replace(/\s/g, "")
+			if([...newAcc].includes(acc) || account_arr.reduce((count, cur) => cur===acc ? count+=1 : count) > 1) {
+				console.log((`Account: ${acc} exists!`))
+				continue;
+			}
+			console.log(acc)
+			newAcc.push(acc)
+		}
+		setAccount(newAcc)
+    });
+  };
 
   useEffect(() => {
     //console.log("Account Changed!")
@@ -163,7 +215,22 @@ export default function Home(props) {
               DELETE ALL DATAS (COOKIES)
             </button>
           </div>
-          <div className="flex-1 flex-col w-full">
+          <div className="flex-2 flex-col">
+            <form className="w-full" onSubmit={readFileUpload}>
+              <div className="flex flex-row items-center justify-center w-full">
+                <label className="text-center lg:mr-4"></label>
+                <input type="file" onChange={(e) => setUploadFile(e.target.files)} />
+              </div>
+              <div className="mt-5 w-full">
+                <button className="bg-gray-500 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full"
+                type="submit">
+                  Upload file Excel
+                </button>
+              </div>
+              
+            </form>
+          </div>
+          {/* <div className="flex-1 flex-col w-full">
             <div className="flex w-full items-center justify-center">
               <span className="text-sm font-bold">Like us on Facebook to follow any updates, issues.</span>
             </div>
@@ -187,7 +254,7 @@ export default function Home(props) {
                 {copied && <div><span className="font-bold text-sm mt-3">Copied to clipboard!</span></div>}
               </div>
             }
-          </div>
+          </div> */}
         </div>
       </main>
 

@@ -316,21 +316,21 @@ export default function AccountRow(props) {
                 }
             }
         }
-        if(!result) {
-            await axios.get(`https://api.alienworlds.fun/get_tx/${user}`)
-            .then((resp) => {
-                if(resp && resp.data) {
-                    result = resp.data
-                }
-            })
-            .catch((err) => {
-                if(err.response) {
-                    console.log(err.response)
-                } else {
-                    console.log(err.message)
-                }
-            })
-        }
+        // if(!result) {
+        //     await axios.get(`https://api.alienworlds.fun/get_tx/${user}`)
+        //     .then((resp) => {
+        //         if(resp && resp.data) {
+        //             result = resp.data
+        //         }
+        //     })
+        //     .catch((err) => {
+        //         if(err.response) {
+        //             console.log(err.response)
+        //         } else {
+        //             console.log(err.message)
+        //         }
+        //     })
+        // }
         if(result && result.mined) {
             console.log("Setting TX data")
             console.log(result)
@@ -478,9 +478,9 @@ export default function AccountRow(props) {
                         </div>
                     </div>
                 </td>
-                <td>{accInfo.cpu_weight}</td>
-                <td>{balance} TLM</td>
-                <td>{wax} WAX</td>
+                <td style={{ color: (accInfo.cpu_weight &&  parseFloat(accInfo.cpu_weight) > 0) ?'green': '' }}>{accInfo.cpu_weight}</td>
+                <td style={{ color: (balance && parseFloat(balance) > 0) ? 'green': '' }}>{balance} TLM</td>
+                <td style={{ color: (wax && parseFloat(wax) > 0)? 'green': '' }}>{wax} WAX</td>
                 <td><span className={`text-sm font-bold px-2 rounded-md whitespace-nowrap `+lastMineBg}>{lastMine.last_mine}</span>
                 <br/>{history[0] ? 
                 <span
