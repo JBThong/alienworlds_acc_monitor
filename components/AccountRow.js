@@ -349,32 +349,22 @@ export default function AccountRow(props) {
     }
 
     const checkNFT = async (user) => {
-        let api_index = getRandom(0, v1.length)
-        let tries = 0
-        let result = null
-        while(tries < 3) {
-            console.log("TRY ",tries)
-            await axios.post(`${v1[api_index%v1.length]}/v1/chain/get_table_rows`,
-            {json: true, code: "m.federation", scope: "m.federation", table: 'claims', lower_bound: user, upper_bound: user})
-            .then((resp) => {
+        let result = [];
+        await axios.get(`https://wax.api.atomicassets.io/atomicassets/v1/accounts/${user}/alien.worlds`)
+            .then(async(resp) => {
                 if(resp && resp.data) {
-                    result = resp.data
-                }
-            })
-            .catch((err) => {
-                console.log(err)
-                tries++
-                api_index++
-            })
-            if(result != null) {
-                break;
-            }
-        }
-        if(!result) {
-            await axios.get(`https://api.alienworlds.fun/check_nft/${user}`)
-            .then((resp) => {
-                if(resp && resp.data) {
-                    result = resp.data
+                    let templates = resp.data.data.templates;
+                    for (let template of templates) {
+                        let assest = {
+                            assets: template. assets
+                        }
+                        await axios.get(`https://wax.api.atomicassets.io/atomicassets/v1/templates/alien.worlds/${template?.template_id}`)
+                        .then(res => {
+                            assest.name = res.data.data.immutable_data.name;
+                            result.push(assest);
+                            console.log(result);
+                        })
+                    }
                 }
             })
             .catch((err) => {
@@ -384,15 +374,13 @@ export default function AccountRow(props) {
                     console.log(err.message)
                 }
             })
-        }
-        if(result.rows.length < 1) {
+        if(result.length < 1) {
             setNft([])
             return
         }
         if(result) {
             console.log("Setting NFT data")
-            console.log(result)
-            setNft([...result.rows[0].template_ids])
+            setNft([...result])
         }
     }
 
@@ -470,14 +458,14 @@ export default function AccountRow(props) {
                 <td className="font-bold">{index+1}</td>
                 <td>{minerName}</td>
                 <td>{acc}</td>
-                <td>
+                {/* <td>
                     <div className="overflow-hidden h-5 text-xs flex rounded bg-gray-800 w-full">
                         <div style={{ width: percent+"%" }} className={`shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center ${barColor}`}>
                             {accInfo.used && <span className="font-bold">{rawPercent}% ({accInfo.used/1000} ms/{accInfo.max/1000} ms)</span>}
                             {!accInfo.used && <span className="font-bold">Loading...</span>}
                         </div>
                     </div>
-                </td>
+                </td> */}
                 <td style={{ color: (accInfo.cpu_weight &&  parseFloat(accInfo.cpu_weight) > 0) ?'green': '' }}>{accInfo.cpu_weight}</td>
                 <td style={{ color: (balance && parseFloat(balance) > 0) ? 'green': '' }}>{balance} TLM</td>
                 <td style={{ color: (wax && parseFloat(wax) > 0)? 'green': '' }}>{wax} WAX</td>
@@ -489,13 +477,9 @@ export default function AccountRow(props) {
                 </span> : ''}</td>
                 <td className="text-xs">{update}</td>
                 <td>
-                <a 
-                className="inline-flex items-center h-8 px-4 m-2 text-sm text-white font-bold transition-colors 
-                duration-150 bg-green-600 rounded-lg focus:shadow-outline hover:bg-green-800" 
-                href={'https://wax.atomichub.io/explorer/account/'+acc}
-                rel="noopener noreferrer" target="_blank">NFT</a>
-                <br />
-                {nft && nft.length > 0 && <span className="font-bold text-xs">{nft.length} NFTs Claimable!</span>}
+                {nft && nft.length > 0 && [...nft].map((item) =>
+                    <div className="font-bold text-xs">{item.name}: {item.assets}</div>
+                )}
                 </td>
             </tr>
             {/* {expanded && <>

@@ -103,7 +103,7 @@ export default function AccountTable(props) {
                         <th>#</th>
                         <th>Miner</th>
                         <th>Wallet</th>
-                        <th className="w-4/12">CPU</th>
+                        {/* <th className="w-4/12">CPU</th>   */}
                         <th>Stake</th>
                         <th>TLM</th>
                         <th>WAX</th>
