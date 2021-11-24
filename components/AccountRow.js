@@ -153,11 +153,14 @@ export default function AccountRow(props) {
             }
             setAccInfo(newCpuState)
             console.log(result.core_liquid_balance)
-            if(result.core_liquid_balance) {
-                setWax(result.core_liquid_balance.slice(0, -4))
-            } else {
-                setWax("N/A")
+            let wax = {
+                core_liquid_balance: result.core_liquid_balance?.slice(0, -4),
+                net_weight: result.total_resources.net_weight?.slice(0, -4),
+                cpu_weight: result.total_resources.cpu_weight?.slice(0, -4)
             }
+            let waxCollect = [];
+            waxCollect.push(wax);
+            setWax([...waxCollect]);
         }
     }
 
@@ -424,7 +427,7 @@ export default function AccountRow(props) {
         const interval = setInterval(async () => {
             //console.log("It's time to checking!")
             setLoading(true)
-        }, 120000);
+        }, 600000);
         return () => clearInterval(interval);
     }, []);
 
@@ -468,7 +471,15 @@ export default function AccountRow(props) {
                 </td> */}
                 <td style={{ color: (accInfo.cpu_weight &&  parseFloat(accInfo.cpu_weight) > 0) ?'green': '' }}>{accInfo.cpu_weight}</td>
                 <td style={{ color: (balance && parseFloat(balance) > 0) ? 'green': '' }}>{balance} TLM</td>
-                <td style={{ color: (wax && parseFloat(wax) > 0)? 'green': '' }}>{wax} WAX</td>
+                <td>
+                    {wax && wax.length > 0 && [...wax].map((item) =>
+                        <div>
+                            {item.core_liquid_balance && <div className="font-bold text-xs">Wax balance: {item.core_liquid_balance}</div>}
+                            {item.net_weight && <div className="font-bold text-xs">Net staked: {item.net_weight}</div>}
+                            {item.cpu_weight && <div className="font-bold text-xs">Cpu staked: {item.cpu_weight}</div>}
+                        </div>
+                    )}
+                </td>
                 <td><span className={`text-sm font-bold px-2 rounded-md whitespace-nowrap `+lastMineBg}>{lastMine.last_mine}</span>
                 <br/>{history[0] ? 
                 <span

@@ -303,7 +303,7 @@ hover:bg-blue-200 py-1 px-3 font-bold ${layout==='Table' ? 'bg-blue-500 text-whi
         <TotalBalanceCard totalTLM={totalTLM} totalWax={totalWax} totalStaked={totalStaked}
         TLMPrice={TLMPrice} WAXPrice={WAXPrice} />
         <div className="flex flex-col rounded-md items-center justify-center p-6 my-3 w-full lg:w-5/6 bg-gray-700">
-          <span className="text-lg font-bold text-center my-1 text-indigo-300">Data will automatically refresh every 120 secs</span>
+          <span className="text-lg font-bold text-center my-1 text-indigo-300">Data will automatically refresh every 600 secs</span>
           <span className="text-lg font-bold text-center my-1 text-indigo-300">Click at trash icon to delete account</span>
           <AccountCard accounts={account}
           onDelete={handleDeleteAcc}
@@ -317,7 +317,7 @@ hover:bg-blue-200 py-1 px-3 font-bold ${layout==='Table' ? 'bg-blue-500 text-whi
         <TotalBalanceCard totalTLM={totalTLM} totalWax={totalWax} totalStaked={totalStaked}
           TLMPrice={TLMPrice} WAXPrice={WAXPrice} />
         <div className="flex flex-col rounded-md items-center justify-center p-6 my-3 w-full lg:w-5/6 bg-gray-700">
-          <span className="text-lg font-bold text-center my-1 text-indigo-300">Data will automatically refresh every 120 secs</span>
+          <span className="text-lg font-bold text-center my-1 text-indigo-300">Data will automatically refresh every 600 secs</span>
           <span className="text-lg font-bold text-center my-1 text-indigo-300">Click at trash icon to delete account</span>
           <span className="visible xl:invisible">If you're using mobile, you may need to scroll along the table.</span>
           <AccountTable accounts={account}
