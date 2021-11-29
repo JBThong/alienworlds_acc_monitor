@@ -156,7 +156,11 @@ export default function AccountRow(props) {
             let wax = {
                 core_liquid_balance: result.core_liquid_balance?.slice(0, -4),
                 net_weight: result.total_resources.net_weight?.slice(0, -4),
-                cpu_weight: result.total_resources.cpu_weight?.slice(0, -4)
+                cpu_weight: result.total_resources.cpu_weight?.slice(0, -4),
+            }
+            if (result.refund_request) {
+                wax.net_amount = result.refund_request.net_amount?.slice(0, -4);
+                wax.cpu_amount = result.refund_request.cpu_amount?.slice(0, -4)
             }
             let waxCollect = [];
             waxCollect.push(wax);
@@ -477,6 +481,8 @@ export default function AccountRow(props) {
                             {item.core_liquid_balance && <div className="font-bold text-xs">Wax balance: {item.core_liquid_balance}</div>}
                             {item.net_weight && <div className="font-bold text-xs">Net staked: {item.net_weight}</div>}
                             {item.cpu_weight && <div className="font-bold text-xs">Cpu staked: {item.cpu_weight}</div>}
+                            {item.net_amount && <div className="font-bold text-xs">Net funding: {item.net_amount}</div>}
+                            {item.cpu_amount && <div className="font-bold text-xs">Cpu funding: {item.cpu_amount}</div>}
                         </div>
                     )}
                 </td>
