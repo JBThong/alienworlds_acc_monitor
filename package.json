@@ -8,6 +8,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@waxio/waxjs": "^1.0.4",
     "atob": "^2.1.2",
     "axios": "^0.21.1",
     "axios-rate-limit": "^1.3.0",
@@ -19,6 +20,8 @@
     "next": "^10.2.3",
     "react": "17.0.2",
     "react-dom": "17.0.2",
+    "react-toastify": "^8.2.0",
+    "toastr": "^2.1.4",
     "universal-cookie": "^4.0.4",
     "xlsx": "^0.17.3"
   },

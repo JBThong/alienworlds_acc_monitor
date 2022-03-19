@@ -1,5 +1,5 @@
 import Head from 'next/head'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Cookies from 'universal-cookie'
 import axios from 'axios'
 import { DateTime } from 'luxon'
@@ -9,6 +9,8 @@ import AccountCard from '../components/AccountCard'
 import AccountTable from '../components/AccountTable'
 import TotalBalanceCard from '../components/TotalBalanceCard'
 import * as XLSX from 'xlsx'
+import * as waxjs from "@waxio/waxjs/dist";
+import AccountStake from '../components/AccountStake'
 
 export default function Home(props) {
 
@@ -41,6 +43,8 @@ export default function Home(props) {
     update: "None"
   })
   const [layout, setLayout] = useState("")
+  const [accountStake, setAccountStake] = useState("")
+  const [waxObj, setWaxOBJ] = useState("")
 
   const handleAddAcc = (e) => {
     e.preventDefault()
@@ -84,11 +88,17 @@ export default function Home(props) {
     })
   }
 
-  const handleDeleteAcc = (acc) => {
-    //console.log("Delete account ",acc)
-    let newAcc = [...account].filter((arr) => arr != acc)
-    setAccount(newAcc)
-  }
+//   const handleDeleteAcc = (acc) => {
+//     //console.log("Delete account ",acc)
+//     let newAcc = [...account].filter((arr) => arr != acc)
+//     setAccount(newAcc)
+//   }
+
+const handleDeleteAcc = useCallback((acc) => {
+    setAccount(account => {
+        return [...account].filter((arr) => arr != acc);
+    });
+  }, []);
 
   const handleDeleteCookies = () => {
     cookies.remove("accounts")
@@ -147,9 +157,46 @@ export default function Home(props) {
     });
   };
 
+  const wax = new waxjs.WaxJS({
+    rpcEndpoint: 'https://wax.greymass.com',
+    tryAutoLogin: false
+  }); 
+
+//checks if autologin is available and calls the normal login function if it is 
+async function autoLogin() { 
+    var isAutoLoginAvailable = await wax.isAutoLoginAvailable(); 
+    if (isAutoLoginAvailable) { 
+        login(); 
+    } 
+} 
+
+//normal login. Triggers a popup for non-whitelisted dapps
+async function login() { 
+    try { 
+        const userAccount = await wax.login();  
+    } catch(e) { 
+
+    } 
+} 
+
+  async function login() {
+    try {
+       let user = {
+           userName: await wax.login(),
+           pubKeys: wax.pubKeys
+       }
+       console.log(user);
+       console.log(wax)
+       setAccountStake(user)
+       setWaxOBJ(wax);
+       
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
   useEffect(() => {
-    //console.log("Account Changed!")
-    //console.log(account)
+    console.log("Account Changed!")
     cookies.set("accounts", account, cookieOptions)
     setLink('https://www.alienworlds.fun/?accounts='+btoa(JSON.stringify(account)))
   }, [account])
@@ -282,6 +329,10 @@ hover:bg-blue-200 py-1 px-3 font-bold ${layout==='Table' ? 'bg-blue-500 text-whi
         </div>
         <div className="flex mt-2 text-center">
             <span className="text-red-500 font-bold">*Please wait for information to be loaded before changing layout*</span>
+        </div>
+        <div>
+          <button className="text-md mt-4 border-black border-solid border-2 rounded px-4 py-2 w-40" id="login"  onClick={login}>WAX Login</button>
+          <AccountStake accountStake={accountStake} accounts={account} wax={waxObj} onDelete={handleDeleteAcc}/>
         </div>
       </div>
 

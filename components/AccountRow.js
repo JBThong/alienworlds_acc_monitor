@@ -205,11 +205,11 @@ export default function AccountRow(props) {
                 }
             })
         }
-        if(result.rows.length < 1) {
-            alert(`${user} is not alien worlds account, please check your spelling!`)
-            onDelete(acc)
-            return
-        }
+        // if(result.rows.length < 1) {
+        //     alert(`${user} is not alien worlds account, please check your spelling!`)
+        //     onDelete(acc)
+        //     return
+        // }
         if(result) {
             console.log("Setting Tag data")
             console.log(result)
@@ -363,7 +363,7 @@ export default function AccountRow(props) {
                     let templates = resp.data.data.templates;
                     for (let template of templates) {
                         let assest = {
-                            assets: template. assets
+                            assets: template.assets
                         }
                         await axios.get(`https://wax.api.atomicassets.io/atomicassets/v1/templates/alien.worlds/${template?.template_id}`)
                         .then(res => {
