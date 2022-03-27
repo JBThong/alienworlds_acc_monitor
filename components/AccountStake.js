@@ -1,22 +1,22 @@
 import { useState, useEffect, useRef } from 'react'
-import AccountInfo from './AccountInfo';
 import http from './Axios';
 import toastr from "toastr";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Cookies from 'universal-cookie'
-import { DateTime } from 'luxon'
+import {getAssets, getAssetIdsByTemplateId } from './Utils';
 
-
+// Need to rename filename and function export, khi nào refactor cho nó rõ nghĩa.
 export default function AccoutStake(props) {
     const {accountStake, accounts, wax, onDelete } = props
     const [accInfo, setAcc] = useState(accountStake)
     const [showStakeForm, setShowStakeForm] = useState(false)
     const [showBuyRamForm, setShowBuyRamForm] = useState(false)
+    const [showTransferAssetForm, setTransferAssetsForm] = useState(false)
 
     
     let showFormStake =  () => setShowStakeForm(!showStakeForm)
     let showFormBuyRam =  () => setShowBuyRamForm(!showBuyRamForm)
+    let showTransferAssets =  () => setTransferAssetsForm(!showTransferAssetForm)
 
     useEffect(async () => {
         console.log(accountStake)
@@ -338,6 +338,105 @@ export default function AccoutStake(props) {
         }
     }
 
+    
+
+    function FormTransferAssets() {
+
+        const [assetsOptions, setAssetsOptions] = useState([]);
+        const [checkedTemplateId, setTemplateId] = useState(0);
+    
+        useEffect( () => { 
+            async function fetchData() {
+                try {
+                    let res = await getAssets(accountStake?.userName)
+                    setAssetsOptions(res);
+                } catch (err) {
+                    console.log(err);
+                }
+            }
+
+            fetchData();
+        }, []);
+        
+        async function handleTransferAssets(e) {
+            e.preventDefault();
+
+            let accstakes = accounts;
+            
+            if(!wax.api) {
+                toast.error('🦄 You need to login wax account before doing actions!');
+            }
+
+            let assetIds = await getAssetIdsByTemplateId(wax.userAccount, checkedTemplateId);
+            console.log(assetIds);
+
+            for (let acc of accstakes) {
+                // Just transfer with asset quantity greater than or equal 3
+                if (assetIds.length < 3 ) {
+                    return;
+                }
+
+                let assetIdsTransfer = assetIds.slice(0, 3);
+                assetIds = [...assetIds.slice(3, assetIds.length)];
+                
+
+                try {
+                    let result = await wax.api.transact({
+                        actions: [{
+                        account: 'atomicassets',
+                        name: 'transfer',
+                        authorization: [{
+                            actor: wax.userAccount,
+                            permission: 'active',
+                          }],
+                          data: {
+                            from: wax.userAccount,
+                            to: acc,
+                            asset_ids: assetIdsTransfer,
+                            memo: 'Transfer assets',
+                          },
+                        }]
+                        }, {
+                            blocksBehind: 3,
+                            expireSeconds: 1200,
+                        });
+
+                    if (result) {
+                        toast.success('Transfer asset to ' + acc + 'success')
+                        console.log(result);
+                        onDelete(acc)
+                    }
+                    
+                    console.log(result, 'transfer assets')
+
+                } catch (err) {
+                    toast.error('Errors transer assets!' + err.toString());
+                    console.log(err)
+                }
+            }
+        }
+
+        return (
+            <div>
+                <form onSubmit={(e)=>handleTransferAssets(e)}>
+                    <div className="p-3 px-5 text-center flex">
+                        {assetsOptions?.map((data, i) => {
+                            return (
+                                <div key={i} className="p-3 p-5 text-center">
+                                    <input type="radio" value={data.template_id} 
+                                        checked={checkedTemplateId === data.template_id}
+                                        onChange={(e) => setTemplateId(e.currentTarget.value)} />
+                                        {data.name}: {data.quantity} - {data.template_id}
+                                </div>
+                            )
+                        })}
+                    </div>
+                    <input type="submit" className = 'bg-gray-500 hover:bg-blue-800 text-white font-bold ml-4 border-black rounded px-4 py-2 w-40'/>
+                </form>
+            </div>
+        )
+    }
+
     return (
         <div className="flex flex-col my-5">
             Account Stake: {accInfo?.account_name} - {accInfo?.core_liquid_balance}
@@ -346,13 +445,17 @@ export default function AccoutStake(props) {
                 <button className='text-md mx-4 my-2 border-black border-2 rounded px-4 py-2 w-40' onClick={showFormBuyRam}>Buy Ram</button>
                 <button className='text-md mx-4 my-2 border-black border-2 rounded px-4 py-2 w-40' onClick={unstakeAll}>Unstake All</button>
                 <button className='text-md mx-4 my-2 border-black border-2 rounded px-4 py-2 w-40' onClick={roundTLM}>Round TLM</button>
+                <button className='text-md mx-4 my-2 border-black border-2 rounded px-4 py-2 w-40' onClick={showTransferAssets}>Transfer Assets</button>
             </div>
 
-            <div className = 'px-4 py-2 mx-4 my-2'>
+            <div className = 'px-4 py-2 mx-4 my-2 formstake'>
                 { showStakeForm ? <FormStake /> : null }
             </div>
-            <div className = 'px-4 py-2 mx-4 my-2'>
+            <div className = 'px-4 py-2 mx-4 my-2 formbuyram'>
                 { showBuyRamForm ? <FormBuyRam /> : null }
+            </div>
+            <div className = 'px-4 py-2 mx-4 my-2 formtransferasset'>
+                { showTransferAssetForm ? <FormTransferAssets /> : null }
             </div>
             <div><ToastContainer autoClose={1000} /></div>
         </div>
